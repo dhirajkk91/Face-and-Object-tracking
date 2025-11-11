@@ -40,4 +40,10 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-Coming soon...
+
+### Phase 2: Basic Face Detection
+```bash
+python src/face_detection.py
+```
+
+Choose option 1 for webcam or option 2 for image file detection.

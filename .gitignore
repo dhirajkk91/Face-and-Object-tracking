@@ -39,12 +39,14 @@ known_faces/
 *.jpg
 *.png
 *.jpeg
-!sample_images/.gitkeep
+!test_images/.gitkeep
 
 # Models
 *.pkl
 *.h5
 *.pb
+models/*.caffemodel
+!models/.gitkeep
 
 # OS
 .DS_Store
