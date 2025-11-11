@@ -7,26 +7,48 @@ A Python-based system for detecting and recognizing faces, as well as identifyin
 - Face recognition with name identification
 - Object detection and classification
 
-## Setup
+## Setup Instructions
 
-1. Create virtual environment:
+### Step 1: Clone the Repository
 ```bash
-python -m venv venv
+git clone https://github.com/dhirajkk91/Face-and-Object-tracking.git
+cd Face-and-Object-tracking
 ```
 
-2. Activate virtual environment:
+### Step 2: Create Virtual Environment
+**Windows:**
 ```bash
-# Windows
+python -m venv venv
 venv\Scripts\activate
+```
 
-# Linux/Mac
+**Linux/Mac:**
+```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. Install dependencies:
+### Step 3: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
+
+**Note:** This will install:
+- OpenCV for computer vision
+- TensorFlow/Keras for deep learning
+- NumPy, SciPy for numerical operations
+- All required dependencies
+
+### Step 4: Run the Application
+```bash
+python src/main.py
+```
+
+**First Run:**
+- Models will download automatically (~30MB total)
+- Face detector model (~10MB)
+- Object detector model (YOLOv4-tiny, ~24MB)
+- This only happens once!
 
 ## Project Structure
 ```

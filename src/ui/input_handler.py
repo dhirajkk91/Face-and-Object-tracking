@@ -14,7 +14,7 @@ class InputHandler:
     
     def handle_key(self, key, results, database, tracker):
         """
-        Handle keyboard input.
+        Handle keyboard input with face selection support.
         
         Args:
             key: Key code from cv2.waitKey()
@@ -25,14 +25,20 @@ class InputHandler:
         Returns:
             True to continue, False to quit
         """
-        # Check if we should enter input mode
+        # Check if we should enter input mode via number key selection
         if not self.input_mode:
-            for result in results:
-                if result.get('status') == 'ready':
-                    self.input_mode = True
-                    self.current_face_id = result['face_id']
-                    self.input_text = ""
-                    break
+            # Check for number key press (1-9)
+            if 49 <= key <= 57:  # Keys 1-9
+                selection_num = key - 48  # Convert to 1-9
+                
+                # Find face with this selection number
+                for result in results:
+                    if result.get('status') == 'ready' and result.get('selection_number') == selection_num:
+                        self.input_mode = True
+                        self.current_face_id = result['face_id']
+                        self.input_text = ""
+                        print(f"Selected face #{selection_num} for naming")
+                        break
         
         if self.input_mode:
             if key == 13:  # Enter

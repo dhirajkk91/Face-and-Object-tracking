@@ -59,13 +59,13 @@ class FaceDatabase:
         
         print(f"✓ Added {name} with {len(embeddings_list)} samples")
     
-    def find_match(self, embedding, threshold=0.7):
+    def find_match(self, embedding, threshold=0.5):
         """
         Find matching person for an embedding.
         
         Args:
             embedding: Face embedding to match
-            threshold: Maximum distance for a match
+            threshold: Maximum distance for a match (lowered to 0.5 for better accuracy)
             
         Returns:
             Tuple of (name, distance) or (None, distance) if no match

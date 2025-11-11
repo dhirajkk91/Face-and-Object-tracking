@@ -131,8 +131,9 @@ class UnifiedApp:
         """Draw all detection results on frame."""
         output = frame.copy()
         
-        # Draw faces
-        for result in face_results:
+        # Draw faces with selection numbers
+        ready_faces = []
+        for idx, result in enumerate(face_results):
             x1, y1, x2, y2 = result['box']
             
             if result['status'] == 'known':
@@ -140,7 +141,9 @@ class UnifiedApp:
                 label = f"Face: {result['name']}"
             elif result['status'] == 'ready':
                 color = (0, 255, 255)
-                label = "Press ENTER to name"
+                ready_faces.append(idx)
+                label = f"[{len(ready_faces)}] Press {len(ready_faces)} to name"
+                result['selection_number'] = len(ready_faces)
             else:
                 color = (0, 0, 255)
                 sample_count = result['sample_count']
