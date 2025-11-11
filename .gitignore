@@ -25,6 +25,7 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 ENV/
 env/
 
@@ -35,11 +36,19 @@ env/
 *.swo
 
 # Project specific
-known_faces/
-*.jpg
-*.png
-*.jpeg
-!test_images/.gitkeep
+known_faces/*.jpg
+known_faces/*.png
+known_faces/*.jpeg
+!known_faces/README.md
+face_encodings_advanced.pkl
+
+# Test files
+test_images/
+Exceptions and tests/
+
+# Python cache
+__pycache__/
+*.pyc
 
 # Models
 *.pkl
