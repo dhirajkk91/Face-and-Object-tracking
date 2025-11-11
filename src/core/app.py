@@ -22,7 +22,7 @@ class FaceRecognitionApp:
         self.detector = FaceDetector(confidence_threshold=0.5)
         self.embedder = FaceEmbedder()
         self.database = FaceDatabase()
-        self.tracker = FaceTracker(samples_needed=10)
+        self.tracker = FaceTracker(samples_needed=200)
         self.ui = UIRenderer()
         self.input_handler = InputHandler()
         

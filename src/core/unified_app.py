@@ -1,12 +1,12 @@
 """
-Unified Application - Face Recognition + Object Detection with Tracking.
+Unified Application - Face Recognition + Object Detection with Person ReID.
 """
 import cv2
 from detection import FaceDetector, ObjectDetector
 from recognition import FaceEmbedder, FaceTracker
 from storage import FaceDatabase
 from ui import UIRenderer, InputHandler
-from tracking import ObjectTracker
+from tracking import ObjectTracker, PersonTracker
 
 
 class UnifiedApp:
@@ -32,13 +32,17 @@ class UnifiedApp:
             self.face_detector = FaceDetector(confidence_threshold=0.5)
             self.embedder = FaceEmbedder()
             self.database = FaceDatabase()
-            self.tracker = FaceTracker(samples_needed=100)  # Increased to 50 samples for better training
+            self.tracker = FaceTracker(samples_needed=200)
             self.input_handler = InputHandler()
         
         # Initialize object detection
         if enable_object_detection:
             self.object_detector = ObjectDetector(confidence_threshold=0.4)
             self.object_tracker = ObjectTracker(max_disappeared=20)
+        
+        # Initialize person tracker (ReID)
+        if enable_face_recognition:
+            self.person_tracker = PersonTracker(max_disappeared=50)
         
         self.ui = UIRenderer()
         
@@ -48,7 +52,7 @@ class UnifiedApp:
     
     def process_frame(self, frame):
         """
-        Process a single frame with both face and object detection.
+        Process a single frame with Person ReID.
         
         Args:
             frame: BGR image from webcam
@@ -58,13 +62,27 @@ class UnifiedApp:
         """
         face_results = []
         object_results = []
+        person_bodies = []
         
-        # Face recognition
+        # Step 1: Detect person bodies first (for ReID)
+        if self.enable_face_recognition and self.enable_object_detection:
+            all_objects = self.object_detector.detect(frame)
+            
+            # Extract person detections
+            for x1, y1, x2, y2, class_name, confidence in all_objects:
+                if class_name == 'person':
+                    person_bodies.append((x1, y1, x2, y2))
+            
+            # Update person tracker
+            tracked_persons = self.person_tracker.update(person_bodies)
+        
+        # Step 2: Face recognition with ReID
         if self.enable_face_recognition:
             faces = self.face_detector.detect(frame)
             
             for x1, y1, x2, y2, confidence in faces:
                 face_img = frame[y1:y2, x1:x2]
+                face_box = (x1, y1, x2, y2)
                 
                 if face_img.size == 0:
                     continue
@@ -72,14 +90,42 @@ class UnifiedApp:
                 embedding = self.embedder.extract(face_img)
                 name, distance = self.database.find_match(embedding)
                 
+                # Find which person body this face belongs to
+                person_id = None
+                if self.enable_object_detection and person_bodies:
+                    for pid, (centroid, person_box) in tracked_persons.items():
+                        if self.person_tracker.is_face_inside_person(face_box, person_box):
+                            person_id = pid
+                            break
+                
                 if name:
+                    # Known face - associate with person
+                    if person_id is not None:
+                        self.person_tracker.associate_face_to_person(name, person_id)
+                    
                     face_results.append({
                         'box': (x1, y1, x2, y2),
                         'name': name,
                         'status': 'known',
-                        'type': 'face'
+                        'type': 'face',
+                        'person_id': person_id
                     })
                 else:
+                    # Unknown face - check if person has known identity
+                    if person_id is not None:
+                        known_face = self.person_tracker.get_face_for_person(person_id)
+                        if known_face:
+                            # Use person's known identity even though face not directly recognized
+                            face_results.append({
+                                'box': (x1, y1, x2, y2),
+                                'name': known_face,
+                                'status': 'known_via_reid',
+                                'type': 'face',
+                                'person_id': person_id
+                            })
+                            continue
+                    
+                    # Truly unknown - collect samples
                     face_id, sample_count, is_ready = self.tracker.track(embedding)
                     face_results.append({
                         'box': (x1, y1, x2, y2),
@@ -87,7 +133,8 @@ class UnifiedApp:
                         'status': 'ready' if is_ready else 'collecting',
                         'face_id': face_id,
                         'sample_count': sample_count,
-                        'type': 'face'
+                        'type': 'face',
+                        'person_id': person_id
                     })
         
         # Object detection with tracking
@@ -138,7 +185,12 @@ class UnifiedApp:
             
             if result['status'] == 'known':
                 color = (0, 255, 0)
-                label = f"{result['name']}"
+                person_id = result.get('person_id')
+                label = f"{result['name']}" + (f" (P{person_id})" if person_id is not None else "")
+            elif result['status'] == 'known_via_reid':
+                color = (0, 200, 200)  # Cyan for ReID
+                person_id = result.get('person_id')
+                label = f"{result['name']} [ReID]"
             elif result['status'] == 'ready':
                 ready_face_count += 1
                 color = (0, 255, 255)
