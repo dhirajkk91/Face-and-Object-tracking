@@ -11,6 +11,7 @@ class InputHandler:
         self.input_mode = False
         self.input_text = ""
         self.current_face_id = None
+        self.selected_number = 0
     
     def handle_key(self, key, results, database, tracker):
         """
@@ -25,21 +26,7 @@ class InputHandler:
         Returns:
             True to continue, False to quit
         """
-        # Check if we should enter input mode via number key selection
-        if not self.input_mode:
-            # Check for number key press (1-9)
-            if 49 <= key <= 57:  # Keys 1-9
-                selection_num = key - 48  # Convert to 1-9
-                
-                # Find face with this selection number
-                for result in results:
-                    if result.get('status') == 'ready' and result.get('selection_number') == selection_num:
-                        self.input_mode = True
-                        self.current_face_id = result['face_id']
-                        self.input_text = ""
-                        print(f"Selected face #{selection_num} for naming")
-                        break
-        
+        # If in input mode, handle text input
         if self.input_mode:
             if key == 13:  # Enter
                 if self.input_text.strip():
@@ -50,19 +37,37 @@ class InputHandler:
                     # Clear tracker
                     tracker.remove_face(self.current_face_id)
                     
+                    print(f"✓ Added: {self.input_text.strip()}")
+                    
                     self.input_mode = False
                     self.input_text = ""
                     self.current_face_id = None
+                    self.selected_number = 0
             elif key == 27:  # Escape
+                print("Cancelled naming")
                 self.input_mode = False
                 self.input_text = ""
                 self.current_face_id = None
+                self.selected_number = 0
             elif key == 8:  # Backspace
                 self.input_text = self.input_text[:-1]
             elif 32 <= key <= 126:  # Printable characters
                 self.input_text += chr(key)
         else:
-            if key == ord('q'):
+            # Not in input mode - check for face selection (1-9)
+            if 49 <= key <= 57:  # Keys 1-9
+                selection_num = key - 48  # Convert to 1-9
+                
+                # Find face with this selection number
+                for result in results:
+                    if result.get('status') == 'ready' and result.get('selection_number') == selection_num:
+                        self.input_mode = True
+                        self.current_face_id = result['face_id']
+                        self.selected_number = selection_num
+                        self.input_text = ""
+                        print(f"\n>>> Selected face #{selection_num} - Type name and press ENTER")
+                        break
+            elif key == ord('q'):
                 return False
         
         return True
@@ -74,3 +79,7 @@ class InputHandler:
     def get_input_text(self):
         """Get current input text."""
         return self.input_text
+    
+    def get_selected_number(self):
+        """Get the selected face number."""
+        return self.selected_number

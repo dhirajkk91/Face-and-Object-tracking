@@ -21,7 +21,7 @@ class UIRenderer:
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     
     @staticmethod
-    def draw_input_box(frame, input_text):
+    def draw_input_box(frame, input_text, face_number=0):
         """Draw input box for entering name."""
         h, w = frame.shape[:2]
         
@@ -31,11 +31,11 @@ class UIRenderer:
         cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
         
         # Text
-        cv2.putText(frame, "New face detected!", (70, h - 120),
+        cv2.putText(frame, f"Naming Face #{face_number}", (70, h - 120),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-        cv2.putText(frame, f"Enter name: {input_text}", (70, h - 80),
+        cv2.putText(frame, f"Name: {input_text}_", (70, h - 80),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        cv2.putText(frame, "Press ESC to cancel", (70, h - 60),
+        cv2.putText(frame, "Press ENTER to save | ESC to cancel", (70, h - 60),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     
     @staticmethod

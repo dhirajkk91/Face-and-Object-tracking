@@ -88,6 +88,8 @@ class FaceRecognitionApp:
         """Draw detection and recognition results on frame."""
         output = frame.copy()
         
+        # Assign numbers to ready faces
+        ready_face_count = 0
         for result in results:
             x1, y1, x2, y2 = result['box']
             
@@ -96,8 +98,11 @@ class FaceRecognitionApp:
                 color = (0, 255, 0)
                 label = result['name']
             elif result['status'] == 'ready':
+                ready_face_count += 1
                 color = (0, 255, 255)
-                label = "Press ENTER to name"
+                label = f"[{ready_face_count}] Ready - Press {ready_face_count}"
+                # Store selection number for input handler
+                result['selection_number'] = ready_face_count
             else:
                 color = (0, 0, 255)
                 sample_count = result['sample_count']
@@ -108,7 +113,8 @@ class FaceRecognitionApp:
         
         # Draw input box if in input mode
         if self.input_handler.is_in_input_mode():
-            self.ui.draw_input_box(output, self.input_handler.get_input_text())
+            selected_num = self.input_handler.get_selected_number()
+            self.ui.draw_input_box(output, self.input_handler.get_input_text(), selected_num)
         
         # Draw stats
         self.ui.draw_stats(output, self.database.count())

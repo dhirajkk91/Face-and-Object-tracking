@@ -32,7 +32,7 @@ class UnifiedApp:
             self.face_detector = FaceDetector(confidence_threshold=0.5)
             self.embedder = FaceEmbedder()
             self.database = FaceDatabase()
-            self.tracker = FaceTracker(samples_needed=10)
+            self.tracker = FaceTracker(samples_needed=100)  # Increased to 50 samples for better training
             self.input_handler = InputHandler()
         
         # Initialize object detection
@@ -131,19 +131,20 @@ class UnifiedApp:
         """Draw all detection results on frame."""
         output = frame.copy()
         
-        # Draw faces with selection numbers
-        ready_faces = []
+        # Assign numbers to ready faces and draw
+        ready_face_count = 0
         for idx, result in enumerate(face_results):
             x1, y1, x2, y2 = result['box']
             
             if result['status'] == 'known':
                 color = (0, 255, 0)
-                label = f"Face: {result['name']}"
+                label = f"{result['name']}"
             elif result['status'] == 'ready':
+                ready_face_count += 1
                 color = (0, 255, 255)
-                ready_faces.append(idx)
-                label = f"[{len(ready_faces)}] Press {len(ready_faces)} to name"
-                result['selection_number'] = len(ready_faces)
+                label = f"[{ready_face_count}] Ready - Press {ready_face_count}"
+                # Store selection number in result for input handler
+                result['selection_number'] = ready_face_count
             else:
                 color = (0, 0, 255)
                 sample_count = result['sample_count']
@@ -165,7 +166,8 @@ class UnifiedApp:
         
         # Draw input box if in input mode
         if self.enable_face_recognition and self.input_handler.is_in_input_mode():
-            self.ui.draw_input_box(output, self.input_handler.get_input_text())
+            selected_num = self.input_handler.get_selected_number()
+            self.ui.draw_input_box(output, self.input_handler.get_input_text(), selected_num)
         
         # Draw stats
         face_count = self.database.count() if self.enable_face_recognition else 0
