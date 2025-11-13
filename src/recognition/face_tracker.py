@@ -8,13 +8,13 @@ from collections import defaultdict
 class FaceTracker:
     """Tracks unknown faces and collects samples for training."""
     
-    def __init__(self, samples_needed=10, similarity_threshold=0.4):
+    def __init__(self, samples_needed=10, similarity_threshold=0.5):
         """
         Initialize face tracker.
         
         Args:
             samples_needed: Number of samples to collect before prompting
-            similarity_threshold: Threshold for matching unknown faces (0.4 for stricter)
+            similarity_threshold: Threshold for matching unknown faces (0.5 for DeepFace)
         """
         self.samples_needed = samples_needed
         self.similarity_threshold = similarity_threshold

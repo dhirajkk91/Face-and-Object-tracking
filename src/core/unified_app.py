@@ -32,7 +32,7 @@ class UnifiedApp:
             self.face_detector = FaceDetector(confidence_threshold=0.5)
             self.embedder = FaceEmbedder()
             self.database = FaceDatabase()
-            self.tracker = FaceTracker(samples_needed=200)
+            self.tracker = FaceTracker(samples_needed=20)
             self.input_handler = InputHandler()
         
         # Initialize object detection
